@@ -1,5 +1,7 @@
 # Alumni Management System
 
+Alumni Survey System for managing alumni accounts, survey questions, survey responses, and job history records. Includes separate alumni and admin experiences with a simple, clean web UI and a SQLite-backed API.
+
 ## Quick Start (SQLite)
 
 ### 1) Install dependencies
