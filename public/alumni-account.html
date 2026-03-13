@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>Alumni Account</title>
+		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+		    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+		    <link rel="stylesheet" href="/assets/theme.css">
+		    <script src="/assets/theme.js" defer></script>
+		    <script src="partials/alumni/logout.js"></script>
+</head>
+
+	<body class="bg-body-tertiary">
+	    <nav class="navbar navbar-dark bg-primary fixed-top shadow-sm">
+	        <div class="container-fluid">
+	            <a class="navbar-brand d-flex align-items-center gap-2" href="/alumni-home">
+	                <img src="/psu-logo.png" alt="PSU Logo" height="36" width="36" class="rounded-circle">
+	                <span class="fw-semibold">Alumni</span>
+	            </a>
+
+	            <div class="d-flex align-items-center gap-2">
+	                <button type="button" class="btn btn-outline-light btn-sm" data-theme-toggle>
+	                    <span data-theme-toggle-label>Dark mode</span>
+	                </button>
+	                <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+	            </div>
+	        </div>
+	    </nav>
+
+	    <main class="container py-4" style="margin-top: 72px;">
+	        <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
+	            <div>
+	                <div class="text-body-secondary small">Welcome</div>
+	                <h1 class="h4 fw-bold mb-0"><span id="username"></span></h1>
+	            </div>
+	            <div class="text-body-secondary small">Choose an action to continue.</div>
+	        </div>
+	        <script>
+	            const full_name = localStorage.getItem('FullName');
+	            document.getElementById('username').innerHTML = full_name;
+	        </script>
+	        <div class="row justify-content-center my-2 g-4">
+
+            <!-- ANSWER SURVEY CARD -->
+            <div class="col-md-4">
+	                <div class="card shadow-sm border-0 text-center">
+	                    <div class="card-body py-5">
+
+                        <!-- SVG ICON -->
+	                        <svg width="48" height="48" class="text-primary mb-3" fill="currentColor" viewBox="0 0 16 16">
+	                            <path d="M3 0h10a2 2 0 0 1 2 2v12l-3-2-3 2-3-2-3 2V2a2 2 0 0 1 2-2z" />
+	                        </svg>
+
+                        <!-- TITLE -->
+                        <h5 class="fw-bold mb-3">Answer Survey</h5>
+
+                        <!-- BUTTON -->
+	                        <button id="btnSurvey" class="btn btn-primary btn-sm px-4">
+	                            Open Survey
+	                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOB HISTORY CARD -->
+            <div class="col-md-4">
+	                <div class="card shadow-sm border-0 text-center">
+	                    <div class="card-body py-5">
+
+                        <!-- SVG ICON -->
+	                        <svg width="48" height="48" class="text-success mb-3" fill="currentColor" viewBox="0 0 16 16">
+	                            <path d="M6.5 1a1 1 0 0 0-1 1v1h5V2a1 1 0 0 0-1-1h-3z" />
+	                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H0V4z" />
+	                            <path d="M0 7h16v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7z" />
+	                        </svg>
+
+                        <!-- TITLE -->
+                        <h5 class="fw-bold mb-3">Job History</h5>
+
+                        <!-- BUTTON -->
+	                        <button id="btnJob" class="btn btn-outline-secondary btn-sm px-4">
+	                            Open Job History
+	                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+	        <div id="divSurvey" class="card shadow-sm border-0 mt-3">
+            <div class="card-header bg-primary text-white text-center py-4 m-2">
+                <h3 class="fw-bold mb-1">Survey Questions for PSUSC Alumni</h3>
+                <p class="mb-0">Kindly answer the questions below.</p>
+            </div>
+
+            <div class="card-body px-4 py-4">
+
+                <div id="date-submitted" class="mb-3 text-center text-muted"></div>
+
+                <!-- Survey Form Container -->
+                <div id="survey_form_container" class="d-none">
+                    <form id="survey-form" class="d-flex flex-column align-items-center">
+
+                        <div id="survey-questions" class="w-100"></div>
+
+                        <button type="submit" class="btn btn-primary mt-4 px-5 text-uppercase fw-semibold">
+                            Submit Survey
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Survey Result (After submitting) -->
+                <div id="result_answer" class="d-none mt-4">
+                    <div class="alert alert-success text-center fw-semibold shadow-sm">
+                        Thank you for completing the survey!
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+	        <div id="divJob" class="card shadow-sm border-0 d-none mt-3">
+            <div class="card-header bg-primary text-white text-center py-4 m-2">
+                <h3 class="text-center fw-bold">Job History of PSU-SC ALUMNI</h3>
+                <p class="text-center mb-0">Encode your previous and current job.</p>
+            </div>
+
+            <div class="card-body">
+	                <button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#addJobModal">
+	                    Add Job History
+	                </button>
+
+                <div id="job-history-list"></div>
+            </div>
+        </div>
+
+
+	    </main>
+		    <!-- Add Job Modal -->
+		    <div class="modal fade" id="addJobModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Add Job History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form id="jobForm">
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" name="company_name" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Position/Job Title</label>
+                            <input type="text" class="form-control" name="position" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="start_date" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">End Date (Leave blank if present)</label>
+                            <input type="date" class="form-control" name="end_date">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Job Modal -->
+    <div class="modal fade" id="editJobModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Edit Job History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form id="jobUpdateForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="update_id" id="update_id">
+
+                        <div class="mb-2">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="update_company_name" name="update_company_name"
+                                required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Position/Job Title</label>
+                            <input type="text" class="form-control" id="update_position" name="update_position"
+                                required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="update_start_date" name="update_start_date"
+                                required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="update_end_date" name="update_end_date">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-warning">Update</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btnSurvey = document.getElementById('btnSurvey');
+        const btnJob = document.getElementById('btnJob');
+        const alumni_id = localStorage.getItem('alumni_id');
+
+        const divSurvey = document.getElementById('divSurvey');
+        const divJob = document.getElementById('divJob');
+
+	        btnSurvey.addEventListener('click', () => {
+	            // show survey
+	            divSurvey.classList.remove('d-none');
+	            divJob.classList.add('d-none');
+	            location.hash = '#survey';
+
+            // active styles
+            btnSurvey.classList.remove('btn-outline-secondary');
+            btnSurvey.classList.add('btn-primary');
+
+            // inactive styles
+            btnJob.classList.remove('btn-primary');
+            btnJob.classList.add('btn-outline-secondary');
+        });
+
+	        btnJob.addEventListener('click', () => {
+	            // show job history
+	            divSurvey.classList.add('d-none');
+	            divJob.classList.remove('d-none');
+	            location.hash = '#job';
+
+            // active styles
+            btnJob.classList.remove('btn-outline-secondary');
+            btnJob.classList.add('btn-primary');
+
+            // inactive styles
+	            btnSurvey.classList.remove('btn-primary');
+	            btnSurvey.classList.add('btn-outline-secondary');
+	        });
+
+	        function applyInitialSectionFromHash() {
+	            if (location.hash === '#job') {
+	                btnJob.click();
+	            } else {
+	                btnSurvey.click();
+	            }
+	        }
+
+	        window.addEventListener('hashchange', applyInitialSectionFromHash);
+	        applyInitialSectionFromHash();
+
+	        document.getElementById('survey-form').addEventListener('submit', async function (e) {
+	            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const answers = [];
+
+            // Loop through questions dynamically
+            formData.forEach((value, key) => {
+                if (key.startsWith("question_")) {
+                    const questionId = key.split("_")[1];
+                    answers.push({
+                        survey_question_id: questionId,
+                        answer: value
+                    });
+                }
+            });
+
+
+            const body = {
+                alumni_id: alumni_id, // <-- you'll pass this from session or URL
+                answers: answers
+            };
+
+            const response = await fetch('/api-submit-survey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+            alert(data.message);
+            getAnswer();
+
+        });
+        async function fetchQuestions() {
+            const response = await fetch('/api-get-all-question');
+            const questions = await response.json();
+            const questionsContainer = document.getElementById('survey-questions');
+            document.getElementById('result_answer').classList.add('d-none');
+            document.getElementById('survey_form_container').classList.remove('d-none');
+
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('mb-3');
+
+                const label = document.createElement('label');
+                label.classList.add('form-label');
+                label.textContent = `${index + 1}. ${question.survey_question}`;
+                questionDiv.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.classList.add('form-control');
+                input.name = `question_${question.survey_question_id}`;
+                input.required = true;
+
+                questionDiv.appendChild(input);
+
+                questionsContainer.appendChild(questionDiv);
+            });
+        }
+        async function submittedOrNot() {
+            const alumni_id = localStorage.getItem('alumni_id');
+            const response = await fetch(`/api-check-submission/${alumni_id}`);
+            const data = await response.json();
+
+            if (data.submitted) {
+                getAnswer();
+                // window.location.href = "/alumni-home";
+            } else {
+                fetchQuestions();
+            }
+        }
+        async function getAnswer() {
+            document.getElementById('result_answer').classList.remove('d-none');
+            document.getElementById('survey_form_container').classList.add('d-none');
+            const alumni_id = localStorage.getItem('alumni_id');
+            const response = await fetch(`api-get-all-survey_answers_by_alumni/${alumni_id}`);
+            const data = await response.json();
+            console.log(data);
+            const dateSubmitted = document.getElementById('date-submitted');
+            data.forEach((answer, index) => {
+                const date = new Date(answer.created_at);
+
+                dateSubmitted.innerHTML = `Date Submitted: ${date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                })}`;
+                const answerDiv = document.createElement('div');
+                answerDiv.classList.add('mb-3');
+                answerDiv.innerHTML = `<strong>${answer.survey_question_id}. ${answer.survey_question}:</strong> <br> Answer: ${answer.answer}<br>`;
+                document.getElementById('result_answer').appendChild(answerDiv);
+            });
+
+        }
+        submittedOrNot();
+        function showEditFormModal(id, company, position, start_date, end_date) {
+            const modal = new bootstrap.Modal(document.getElementById('editJobModal'));
+
+            // Format dates properly for date input (YYYY-MM-DD format)
+            const formatDate = (dateStr) => {
+                if (!dateStr || dateStr === "0000-00-00") return "";
+                // Handle ISO 8601 format (2025-08-25T16:00:00.000Z)
+                if (dateStr.includes('T')) {
+                    return dateStr.split('T')[0];
+                }
+                // Handle regular date format with space separator
+                return dateStr.split(' ')[0];
+            };
+
+            document.getElementById('update_id').value = id;
+            document.getElementById('update_company_name').value = company;
+            document.getElementById('update_position').value = position;
+            document.getElementById('update_start_date').value = formatDate(start_date);
+            document.getElementById('update_end_date').value = formatDate(end_date);
+
+            modal.show();
+        }
+        const jobForm = document.getElementById('jobForm');
+        const updateJobForm = document.getElementById('jobUpdateForm');
+        jobForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(jobForm);
+            const data = {
+                alumni_id: alumni_id,
+                company_name: formData.get('company_name'),
+                position: formData.get('position'),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date')
+            };
+
+            const response = await fetch('/api-store-job-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const responseData = await response.json();
+            alert(responseData.message);
+            getJobHistory();
+            jobForm.reset();
+            // Close the add modal
+            const addModal = bootstrap.Modal.getInstance(document.getElementById('addJobModal'));
+            if (addModal) addModal.hide();
+        });
+
+        updateJobForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            let formData = new FormData(updateJobForm);
+            let data = {
+                job_history_id: formData.get('update_id'),
+                company_name: formData.get('update_company_name'),
+                position: formData.get('update_position'),
+                start_date: formData.get('update_start_date'),
+                end_date: formData.get('update_end_date')
+            };
+            const response = await fetch('/api-update-job-history', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            const responseData = await response.json();
+            alert(responseData.message);
+            getJobHistory();
+            // Close the edit modal
+            const editModal = bootstrap.Modal.getInstance(document.getElementById('editJobModal'));
+            if (editModal) editModal.hide();
+            modal.hide();
+            getJobHistory();
+        });
+
+        async function getJobHistory() {
+            const response = await fetch(`/api-get-all-job-history/${alumni_id}`);
+            const data = await response.json();
+
+            const container = document.getElementById("job-history-list");
+
+            container.innerHTML = `
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Job History</h5>
+                 
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+	                            <thead class="table-primary">
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Company</th>
+                                    <th>Position</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th class="text-center" width="160px">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${data.length === 0
+                    ? `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <em>No job history found.</em>
+                        </td>
+                    </tr>
+                `
+                    : data
+                        .map(
+                            (job, index) => `
+                                        <tr>
+                                            <td class="fw-bold">${index + 1}</td>
+                                            <td>${job.company_name}</td>
+                                            <td>${job.position}</td>
+                                            <td>${getDate(job.start_date)}</td>
+                                            <td>${job.end_date && job.end_date !== "0000-00-00"
+                                    ? getDate(job.end_date)
+                                    : `<span class="badge bg-success">Present</span>`
+                                }</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-warning btn-sm me-1"
+                                                    onclick="showEditFormModal(
+                                                        ${job.job_history_id},
+                                                        '${job.company_name.replace(/'/g, "\\'")}',
+                                                        '${job.position.replace(/'/g, "\\'")}',
+                                                        '${job.start_date}',
+                                                        '${job.end_date}'
+                                                    )">
+                                                    Edit
+                                                </button>
+
+                                                <button class="btn btn-danger btn-sm"
+                                                    onclick="deleteJobHistory(${job.job_history_id})">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `
+                        )
+                        .join("")}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        }
+        async function deleteJobHistory(job_history_id) {
+            if (!confirm('Are you sure you want to delete this job history?')) return;
+
+            const response = await fetch('/api-delete-job-history', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ job_history_id })
+            });
+
+            const responseData = await response.json();
+            alert(responseData.message);
+
+            getJobHistory();
+        }
+	
+	        getJobHistory();
+	        function getDate(dateValue) {
+	            const date = new Date(dateValue);
+	            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+    </script>
+</body>
+
+</html>

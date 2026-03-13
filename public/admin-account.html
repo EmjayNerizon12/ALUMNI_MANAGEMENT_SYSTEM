@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>Admin Account</title>
+		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+		    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+			    <link rel="stylesheet" href="/assets/theme.css">
+			    <script src="/assets/theme.js" defer></script>
+			    <script src="partials/admin/logout.js"></script>
+
+	</head>
+
+	<body class="bg-body-tertiary">
+	    <nav class="navbar navbar-dark bg-primary fixed-top shadow-sm">
+	        <div class="container-fluid">
+	            <a class="navbar-brand d-flex align-items-center gap-2" href="/admin-dashboard">
+	                <img src="/psu-logo.png" alt="PSU Logo" height="36" width="36" class="rounded-circle">
+	                <span class="fw-semibold">ALUMNI SURVEY MANAGEMENT</span>
+	            </a>
+	
+		            <div class="d-flex align-items-center gap-2">
+		                <span class="text-white-50 small d-none d-md-inline"><span class="user-role"></span></span>
+
+		                <button type="button" class="btn btn-outline-light btn-sm" data-theme-toggle>
+		                    <span data-theme-toggle-label>Dark mode</span>
+		                </button>
+
+		                <div class="dropdown">
+		                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="userMenu"
+		                        data-bs-toggle="dropdown" aria-expanded="false">
+		                        Admin
+		                    </button>
+		                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+		                        <li><a class="dropdown-item" href="/admin-dashboard">Dashboard</a></li>
+		                        <li>
+		                            <hr class="dropdown-divider">
+		                        </li>
+		                        <li><a class="dropdown-item" onclick="logout()">Logout</a></li>
+		                    </ul>
+		                </div>
+		            </div>
+		        </div>
+		    </nav>
+
+	    <main class="container py-4" style="margin-top: 72px;">
+	        <div class="mb-3">
+	            <h1 class="h4 fw-bold mb-1">Dashboard</h1>
+	            <div class="text-body-secondary">Manage alumni records and survey data.</div>
+	        </div>
+
+	        <div class="d-flex gap-2 justify-content-start my-4">
+	            <button id="btnAlumni" class="btn btn-primary btn-sm">Alumni List</button>
+	            <button id="btnSurveyQuestions" class="btn btn-outline-secondary btn-sm">Survey Questions</button>
+	            <button id="btnSurveyResults" class="btn btn-outline-secondary btn-sm">Survey Results</button>
+	        </div>
+
+        <!-- Sections -->
+        <div id="sectionAlumni">
+
+
+            <div id="alumni-list-table"></div>
+
+
+        </div>
+        <div id="sectionSurveyQuestions" class="d-none">
+            <!-- Add Survey Question Modal -->
+            <div class="modal fade" id="addSurveyModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">Add Survey Question</h5>
+                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Survey Question</label>
+                                <input type="text" id="surveyQuestion" class="form-control"
+                                    placeholder="Enter survey question">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button class="btn btn-primary" onclick="addSurveyQuestion()">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Survey Question Modal -->
+            <div class="modal fade" id="editSurveyModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title">Edit Survey Question</h5>
+                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="update_surveyId">
+                            <div class="mb-3">
+                                <label class="form-label">Survey Question</label>
+                                <input type="text" id="update_surveyQuestion" class="form-control"
+                                    placeholder="Enter survey question">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn btn-warning" onclick="updateSurveyQuestion()">Update</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Survey List Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="card-title">Survey Questions</h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSurveyModal">
+                            + Add Question
+                        </button>
+                    </div>
+
+                    <div id="survey-list-table"></div>
+                </div>
+            </div>
+
+        </div>
+        <div id="sectionSurveyResults" class="d-none">
+            <h2>Alumni that have answered the survey</h2>
+            <p>Display the survey and answer of alumni</p>
+            <div id="alumni-answer-table"></div>
+        </div>
+        <div class="modal fade" id="jobHistoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="jobHistoryTitle">Job History</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="jobHistoryContent">
+                        <!-- Job history table will be inserted here -->
+                        <div class="text-center my-3">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            // Buttons
+            const btnAlumni = document.getElementById('btnAlumni');
+            const btnSurveyQuestions = document.getElementById('btnSurveyQuestions');
+            const btnSurveyResults = document.getElementById('btnSurveyResults');
+
+            // Sections
+            const sectionAlumni = document.getElementById('sectionAlumni');
+            const sectionSurveyQuestions = document.getElementById('sectionSurveyQuestions');
+            const sectionSurveyResults = document.getElementById('sectionSurveyResults');
+
+	            // Reusable function
+	            function showSection(activeBtn, sectionToShow, hash) {
+	                // Reset buttons
+	                [btnAlumni, btnSurveyQuestions, btnSurveyResults].forEach(btn => {
+	                    btn.classList.remove("btn-primary");
+	                    btn.classList.add("btn-outline-secondary");
+	                });
+
+                // Set active button
+                activeBtn.classList.add("btn-primary");
+                activeBtn.classList.remove("btn-outline-secondary");
+
+                // Hide all sections
+                [sectionAlumni, sectionSurveyQuestions, sectionSurveyResults].forEach(sec => {
+                    sec.classList.add("d-none");
+                });
+	
+	                // Show selected section
+	                sectionToShow.classList.remove("d-none");
+
+	                if (hash && location.hash !== hash) {
+	                    location.hash = hash;
+	                }
+	            }
+	
+	            // Events
+	            btnAlumni.addEventListener('click', () => showSection(btnAlumni, sectionAlumni, '#alumni'));
+	            btnSurveyQuestions.addEventListener('click', () => showSection(btnSurveyQuestions, sectionSurveyQuestions, '#survey-questions'));
+	            btnSurveyResults.addEventListener('click', () => showSection(btnSurveyResults, sectionSurveyResults, '#survey-results'));
+
+	            function applyInitialSectionFromHash() {
+	                switch (location.hash) {
+	                    case '#survey-questions':
+	                        btnSurveyQuestions.click();
+	                        break;
+	                    case '#survey-results':
+	                        btnSurveyResults.click();
+	                        break;
+	                    case '#alumni':
+	                    default:
+	                        btnAlumni.click();
+	                        break;
+	                }
+	            }
+
+	            window.addEventListener('hashchange', applyInitialSectionFromHash);
+	            applyInitialSectionFromHash();
+	        </script>
+	    </main>
+		    <script src="partials/survey-question.js"></script>
+		    <script src="partials/alumni-list.js"></script>
+		    <script src="partials/survey-result.js"></script>
+	</body>
+
+</html>

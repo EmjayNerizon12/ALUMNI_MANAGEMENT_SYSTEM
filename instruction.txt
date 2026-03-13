@@ -1,0 +1,34 @@
+1. Account System & API Functionality (Login / Registration / Survey API / Job History API working correctly) - 30%
+
+2. Frontend Display (Forms & Pages) (Login page, Survey page, Job History page readable and working) - 30%
+
+3. Database Design & Integration (Proper tables for users, questions, answers, job history with correct relationships) - 20%
+
+4. Creativity & Presentation Quality (Neat UI, clear layout, organized pages, user-friendly design) - 20%
+
+
+
+Case Study Project: Alumni Survey System
+Create a simple Alumni Survey Web System using Express and MySQL that includes the following features:
+
+1. Alumni Account (Login Credentials)
+Alumni must be able to register an account.
+Alumni must log in using email/username + password.
+Store credentials securely in the database.
+
+2. Dynamic Questionnaire
+
+Create a survey questionnaire for alumni.
+Questions must be stored in the database (dynamic, not hardcoded).
+Alumni answers must be stored per user.
+At least 5 questions are required (e.g., employment status, skills, program relevance, etc.).
+
+3. Job History Tracking
+Alumni may add multiple job experiences.
+Each job record must include:
+Company name
+Position
+Start date
+End date (or “Present”)
+
+All job records must be stored in a separate table and linked to the alumni account.
