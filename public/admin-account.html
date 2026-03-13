@@ -4,68 +4,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <title>Admin Account</title>
-		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-		    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-			    <link rel="stylesheet" href="/assets/theme.css">
-			    <script src="/assets/theme.js" defer></script>
-			    <script src="partials/admin/logout.js"></script>
+    <title>Admin Account</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/theme.css">
+    <script src="/assets/theme.js" defer></script>
+    <script src="partials/admin/logout.js"></script>
+    <style>
+        :root {
+            --ink: #0f1b2d;
+            --muted: #5f6b7a;
+            --primary: #1e3a8a;
+            --primary-2: #2563eb;
+            --surface: #ffffff;
+            --border: rgba(15, 27, 45, 0.08);
+            --shadow: 0 20px 60px rgba(15, 27, 45, 0.12);
+            --page-bg: radial-gradient(1200px 600px at 10% -10%, #e0e7ff 0%, transparent 60%),
+                        radial-gradient(900px 500px at 110% 10%, #dbeafe 0%, transparent 55%),
+                        linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        }
 
-	</head>
+        [data-bs-theme="dark"] {
+            --ink: #e6edf7;
+            --muted: #9aa4b2;
+            --primary: #6aa2ff;
+            --primary-2: #8bb3ff;
+            --surface: #0f172a;
+            --border: rgba(148, 163, 184, 0.2);
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            --page-bg: radial-gradient(1200px 600px at 10% -10%, rgba(56, 78, 150, 0.35) 0%, transparent 60%),
+                        radial-gradient(900px 500px at 110% 10%, rgba(59, 130, 246, 0.2) 0%, transparent 55%),
+                        linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+        }
 
-	<body class="bg-body-tertiary">
-	    <nav class="navbar navbar-dark bg-primary fixed-top shadow-sm">
-	        <div class="container-fluid">
-	            <a class="navbar-brand d-flex align-items-center gap-2" href="/admin-dashboard">
-	                <img src="/psu-logo.png" alt="PSU Logo" height="36" width="36" class="rounded-circle">
-	                <span class="fw-semibold">ALUMNI SURVEY MANAGEMENT</span>
-	            </a>
-	
-		            <div class="d-flex align-items-center gap-2">
-		                <span class="text-white-50 small d-none d-md-inline"><span class="user-role"></span></span>
+        html {
+            font-size: clamp(15px, 1.1vw + 10px, 18px);
+        }
 
-		                <button type="button" class="btn btn-outline-light btn-sm" data-theme-toggle>
-		                    <span data-theme-toggle-label>Dark mode</span>
-		                </button>
+        body {
+            background: var(--page-bg);
+            font-family: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+            color: var(--ink);
+        }
 
-		                <div class="dropdown">
-		                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="userMenu"
-		                        data-bs-toggle="dropdown" aria-expanded="false">
-		                        Admin
-		                    </button>
-		                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-		                        <li><a class="dropdown-item" href="/admin-dashboard">Dashboard</a></li>
-		                        <li>
-		                            <hr class="dropdown-divider">
-		                        </li>
-		                        <li><a class="dropdown-item" onclick="logout()">Logout</a></li>
-		                    </ul>
-		                </div>
-		            </div>
-		        </div>
-		    </nav>
+        .app-shell {
+            padding-top: 76px;
+        }
 
-	    <main class="container py-4" style="margin-top: 72px;">
-	        <div class="mb-3">
-	            <h1 class="h4 fw-bold mb-1">Dashboard</h1>
-	            <div class="text-body-secondary">Manage alumni records and survey data.</div>
-	        </div>
+        .topbar {
+            background: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(10px);
+        }
 
-	        <div class="d-flex gap-2 justify-content-start my-4">
-	            <button id="btnAlumni" class="btn btn-primary btn-sm">Alumni List</button>
-	            <button id="btnSurveyQuestions" class="btn btn-outline-secondary btn-sm">Survey Questions</button>
-	            <button id="btnSurveyResults" class="btn btn-outline-secondary btn-sm">Survey Results</button>
-	        </div>
+        [data-bs-theme="light"] .topbar {
+            background: rgba(30, 58, 138, 0.95);
+        }
 
-        <!-- Sections -->
-        <div id="sectionAlumni">
+        .brand-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+        }
 
+        .glass-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
 
-            <div id="alumni-list-table"></div>
+        .hero {
+            padding: 28px;
+            border-radius: 20px;
+            background: linear-gradient(140deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.02));
+        }
 
+        [data-bs-theme="dark"] .hero {
+            background: linear-gradient(140deg, rgba(96, 165, 250, 0.18), rgba(15, 23, 42, 0.1));
+        }
 
+        .section-title {
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--muted);
+        }
+
+        .table-shell {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .table thead th {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--ink);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        [data-bs-theme="dark"] .table thead th {
+            background: rgba(96, 165, 250, 0.12);
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+            border-color: var(--border);
+            background-color: var(--surface);
+            color: var(--ink);
+        }
+
+        .form-control::placeholder {
+            color: var(--muted);
+        }
+
+        .stat-card {
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-card .label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .btn-soft {
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary-2);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-soft:hover {
+            background: rgba(37, 99, 235, 0.2);
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark fixed-top topbar shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/admin-dashboard">
+                <span class="brand-chip">
+                    <img src="/logo.png" alt="PSU Logo" height="32" width="32" class="rounded-circle">
+                    <span class="fw-semibold">Alumni Survey Admin</span>
+                </span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-white-50 small d-none d-md-inline"><span class="user-role"></span></span>
+
+                <button type="button" class="btn btn-outline-light btn-sm" data-theme-toggle>
+                    <span data-theme-toggle-label>Dark mode</span>
+                </button>
+
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="userMenu"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Admin
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item" href="/admin-dashboard">Dashboard</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
+    </nav>
+
+    <main class="container app-shell pb-5 mt-5">
+        <div class="glass-card hero mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <div class="subtitle small">Admin Workspace</div>
+                    <h1 class="h4 fw-bold mb-1">Dashboard</h1>
+                    <div class="subtitle">Manage alumni records, questions, and survey results.</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button id="btnAlumni" class="btn btn-primary btn-sm px-4">Alumni List</button>
+                    <button id="btnSurveyQuestions" class="btn btn-outline-secondary btn-sm px-4">Survey Questions</button>
+                    <button id="btnSurveyResults" class="btn btn-outline-secondary btn-sm px-4">Survey Results</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card p-4 h-100">
+                    <div class="label">Alumni Records</div>
+                    <div class="value" id="statAlumni">--</div>
+                    <div class="subtitle small">Total alumni in the system.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-4 h-100">
+                    <div class="label">Survey Questions</div>
+                    <div class="value" id="statQuestions">--</div>
+                    <div class="subtitle small">Active questions available.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-4 h-100">
+                    <div class="label">Survey Responses</div>
+                    <div class="value" id="statResponses">--</div>
+                    <div class="subtitle small">Alumni submissions to date.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sectionAlumni">
+            <div class="glass-card p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">Alumni List</h2>
+                        <div class="subtitle">View, update, or inspect alumni profiles.</div>
+                    </div>
+                    <button class="btn btn-soft btn-sm" onclick="btnAlumni.click()">Refresh</button>
+                </div>
+                <div id="alumni-list-table"></div>
+            </div>
+        </div>
+
         <div id="sectionSurveyQuestions" class="d-none">
+            <div class="glass-card p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">Survey Questions</h2>
+                        <div class="subtitle">Manage the questions alumni respond to.</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSurveyModal">
+                        Add Question
+                    </button>
+                </div>
+
+                <div id="survey-list-table"></div>
+            </div>
+
             <!-- Add Survey Question Modal -->
             <div class="modal fade" id="addSurveyModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
@@ -112,27 +306,21 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Survey List Table -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <h5 class="card-title">Survey Questions</h5>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSurveyModal">
-                            + Add Question
-                        </button>
-                    </div>
-
-                    <div id="survey-list-table"></div>
-                </div>
-            </div>
-
         </div>
+
         <div id="sectionSurveyResults" class="d-none">
-            <h2>Alumni that have answered the survey</h2>
-            <p>Display the survey and answer of alumni</p>
-            <div id="alumni-answer-table"></div>
+            <div class="glass-card p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">Survey Results</h2>
+                        <div class="subtitle">Review alumni responses and submissions.</div>
+                    </div>
+                    <button class="btn btn-soft btn-sm" onclick="btnSurveyResults.click()">Refresh</button>
+                </div>
+                <div id="alumni-answer-table"></div>
+            </div>
         </div>
+
         <div class="modal fade" id="jobHistoryModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
@@ -141,7 +329,6 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" id="jobHistoryContent">
-                        <!-- Job history table will be inserted here -->
                         <div class="text-center my-3">
                             <div class="spinner-border text-primary" role="status"></div>
                         </div>
@@ -152,69 +339,82 @@
                 </div>
             </div>
         </div>
+
         <script>
-            // Buttons
             const btnAlumni = document.getElementById('btnAlumni');
             const btnSurveyQuestions = document.getElementById('btnSurveyQuestions');
             const btnSurveyResults = document.getElementById('btnSurveyResults');
 
-            // Sections
             const sectionAlumni = document.getElementById('sectionAlumni');
             const sectionSurveyQuestions = document.getElementById('sectionSurveyQuestions');
             const sectionSurveyResults = document.getElementById('sectionSurveyResults');
 
-	            // Reusable function
-	            function showSection(activeBtn, sectionToShow, hash) {
-	                // Reset buttons
-	                [btnAlumni, btnSurveyQuestions, btnSurveyResults].forEach(btn => {
-	                    btn.classList.remove("btn-primary");
-	                    btn.classList.add("btn-outline-secondary");
-	                });
+            function showSection(activeBtn, sectionToShow, hash) {
+                [btnAlumni, btnSurveyQuestions, btnSurveyResults].forEach(btn => {
+                    btn.classList.remove("btn-primary");
+                    btn.classList.add("btn-outline-secondary");
+                });
 
-                // Set active button
                 activeBtn.classList.add("btn-primary");
                 activeBtn.classList.remove("btn-outline-secondary");
 
-                // Hide all sections
                 [sectionAlumni, sectionSurveyQuestions, sectionSurveyResults].forEach(sec => {
                     sec.classList.add("d-none");
                 });
-	
-	                // Show selected section
-	                sectionToShow.classList.remove("d-none");
 
-	                if (hash && location.hash !== hash) {
-	                    location.hash = hash;
-	                }
-	            }
-	
-	            // Events
-	            btnAlumni.addEventListener('click', () => showSection(btnAlumni, sectionAlumni, '#alumni'));
-	            btnSurveyQuestions.addEventListener('click', () => showSection(btnSurveyQuestions, sectionSurveyQuestions, '#survey-questions'));
-	            btnSurveyResults.addEventListener('click', () => showSection(btnSurveyResults, sectionSurveyResults, '#survey-results'));
+                sectionToShow.classList.remove("d-none");
 
-	            function applyInitialSectionFromHash() {
-	                switch (location.hash) {
-	                    case '#survey-questions':
-	                        btnSurveyQuestions.click();
-	                        break;
-	                    case '#survey-results':
-	                        btnSurveyResults.click();
-	                        break;
-	                    case '#alumni':
-	                    default:
-	                        btnAlumni.click();
-	                        break;
-	                }
-	            }
+                if (hash && location.hash !== hash) {
+                    location.hash = hash;
+                }
+            }
 
-	            window.addEventListener('hashchange', applyInitialSectionFromHash);
-	            applyInitialSectionFromHash();
-	        </script>
-	    </main>
-		    <script src="partials/survey-question.js"></script>
-		    <script src="partials/alumni-list.js"></script>
-		    <script src="partials/survey-result.js"></script>
-	</body>
+            btnAlumni.addEventListener('click', () => showSection(btnAlumni, sectionAlumni, '#alumni'));
+            btnSurveyQuestions.addEventListener('click', () => showSection(btnSurveyQuestions, sectionSurveyQuestions, '#survey-questions'));
+            btnSurveyResults.addEventListener('click', () => showSection(btnSurveyResults, sectionSurveyResults, '#survey-results'));
+
+            function applyInitialSectionFromHash() {
+                switch (location.hash) {
+                    case '#survey-questions':
+                        btnSurveyQuestions.click();
+                        break;
+                    case '#survey-results':
+                        btnSurveyResults.click();
+                        break;
+                    case '#alumni':
+                    default:
+                        btnAlumni.click();
+                        break;
+                }
+            }
+
+            window.addEventListener('hashchange', applyInitialSectionFromHash);
+            applyInitialSectionFromHash();
+
+            async function loadAdminStats() {
+                try {
+                    const response = await fetch('/api-admin-stats');
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    const alumniEl = document.getElementById('statAlumni');
+                    const questionsEl = document.getElementById('statQuestions');
+                    const responsesEl = document.getElementById('statResponses');
+
+                    if (alumniEl) alumniEl.textContent = data.alumni_total ?? '--';
+                    if (questionsEl) questionsEl.textContent = data.survey_question_total ?? '--';
+                    if (responsesEl) responsesEl.textContent = data.survey_response_total ?? '--';
+                } catch (error) {
+                    console.error('Failed to load admin stats', error);
+                }
+            }
+
+            loadAdminStats();
+        </script>
+    </main>
+
+    <script src="partials/survey-question.js"></script>
+    <script src="partials/alumni-list.js"></script>
+    <script src="partials/survey-result.js"></script>
+</body>
 
 </html>
