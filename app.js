@@ -1,25 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mysql = require('mysql');
 const path = require('path');
 const app = express();
 const bcrypt = require('bcrypt');
+const db = require("./db");
 app.use(bodyParser.json());
-
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'alumni_db'
-});
-
-db.connect(err => {
-    if (err) {
-        console.error('Database connection error:', err);
-    } else {
-        console.log('Connected to the MySQL database.');
-    }
-});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -87,71 +72,54 @@ app.get('/admin-alumni', (req, res) => {
 app.post('/api-register', async (req, res) => {
     const { fname, mname, lname, contact_no, username, password } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const query = 'INSERT INTO alumni (fname,mname, lname, contact_no, username, password) VALUES (?, ?, ?, ?, ?, ?)';
-        db.query(query, [fname, mname, lname, contact_no, username, hashedPassword], (err, result) => {
-            if (err) {
-                res.status(500).send(err);
+        const normalizedUsername = String(username || "").trim();
+        if (!normalizedUsername) return res.status(400).send({ message: "Username is required" });
 
-            } else {
-                res.status(201).send({ message: 'User registered!', userId: result.insertId });
-            }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [userId] = await db("alumni").insert({
+            fname,
+            mname: mname || null,
+            lname,
+            contact_no: contact_no || null,
+            username: normalizedUsername,
+            password: hashedPassword,
         });
+        res.status(201).send({ message: 'User registered!', userId });
     } catch (err) {
-        console.log(err);
+        res.status(500).send({ message: "Registration failed", error: String(err?.message || err) });
     }
 
 });
 app.post('/api-login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const checkAdminQuery = 'SELECT * FROM admin_user WHERE username = ?';
-        db.query(checkAdminQuery, [username], (err, adminResults) => {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                if (adminResults.length > 0) {
-                    const adminUser = adminResults[0];
-                    bcrypt.compare(password, adminUser.password, (err, isMatch) => {
-                        if (err) {
-                            res.status(500).send(err);
-                        } else if (!isMatch) {
-                            res.status(401).send({ message: 'Invalid username or password' });
-                        } else {
-                            res.status(200).send([{ message: 'Login successful!', adminUser }, { role: 'admin' }]);
-                        }
-                    });
-                }
-                else {
-                    const query = 'SELECT * FROM alumni WHERE username = ?';
-                    db.query(query, [username], (err, results) => {
-                        if (err) {
-                            res.status(500).send(err);
+        const normalizedUsername = String(username || "").trim();
+        if (!normalizedUsername) return res.status(400).send({ message: "Username is required" });
 
-                        } else {
-                            if (results.length === 0) {
-                                return res.status(401).send({ message: 'Invalid username or password' });
-                            }
+        const adminUser = await db("admin_user").where({ username: normalizedUsername }).first();
+        if (adminUser) {
+            const isMatch = await bcrypt.compare(password, adminUser.password);
+            if (!isMatch) return res.status(401).send({ message: 'Invalid username or password' });
+            return res.status(200).send([{ message: 'Login successful!', adminUser }, { role: 'admin' }]);
+        }
 
-                            const user = results[0];
-                            bcrypt.compare(password, user.password, (err, isMatch) => {
-                                if (err) {
-                                    res.status(500).send(err);
-                                } else if (!isMatch) {
-                                    res.status(401).send({ message: 'Invalid username or password' });
-                                } else {
-                                    res.status(200).send([{ message: 'Login successful!', user }, { role: 'alumni' }, { alumni_id: user.alumni_id }, { FullName: user.fname + " " + user.lname }, { username: username }]);
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
+        const user = await db("alumni").where({ username: normalizedUsername }).first();
+        if (!user) return res.status(401).send({ message: 'Invalid username or password' });
 
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).send({ message: 'Invalid username or password' });
 
+        return res
+            .status(200)
+            .send([
+                { message: 'Login successful!', user },
+                { role: 'alumni' },
+                { alumni_id: user.alumni_id },
+                { FullName: user.fname + " " + user.lname },
+                { username: normalizedUsername },
+            ]);
     } catch (err) {
-        console.log(err);
+        res.status(500).send({ message: "Login failed", error: String(err?.message || err) });
     }
 
 });
@@ -199,151 +167,225 @@ app.post('/api-login', async (req, res) => {
 // });
 
 app.post('/api-store-survey', (req, res) => {
-    const { survey_question } = req.body;
-    const query = 'INSERT INTO survey_question (survey_question) VALUES (?)';
-    db.query(query, [survey_question], (err, survey_result) => {
-        if (err)
-            return res.status(500).send(err);
-        else
+    (async () => {
+        try {
+            const { survey_question } = req.body;
+            await db("survey_question").insert({ survey_question });
             return res.status(201).send({ message: 'Survey Question Created Successfully' });
-
-    });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to create survey question", error: String(err?.message || err) });
+        }
+    })();
 });
 
 app.put('/api-update-survey', (req, res) => {
-    const { survey_question, survey_id } = req.body;
-    const query = 'UPDATE survey_question SET survey_question=? where survey_question_id=?';
-    db.query(query, [survey_question, survey_id], (err, survey_result) => {
-        if (err)
-            return res.status(500).send(err);
-        else
+    (async () => {
+        try {
+            const { survey_question, survey_id } = req.body;
+            await db("survey_question")
+                .where({ survey_question_id: survey_id })
+                .update({ survey_question, updated_at: db.fn.now() });
             return res.status(200).send({ message: 'Survey Question Updated Successfully' });
-
-    });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to update survey question", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-get-survey-question', (req, res) => {
-    const query = 'SELECT * FROM survey_question';
-    db.query(query, (err, result) => {
-        if (err) return res.status(500)
-        else return res.json(result);
-    });
+    (async () => {
+        try {
+            const result = await db("survey_question").select("*");
+            return res.json(result);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch survey questions", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-get-all-alumni', function (req, res) {
-    const query = 'SELECT * FROM alumni';
-    db.query(query, function (err, results) {
-        if (err) return res.status(500);
-        else return res.json(results);
-    });
+    (async () => {
+        try {
+            const results = await db("alumni").select("*");
+            return res.json(results);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch alumni", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-get-all-survey_answers', function (req, res) {
-    const query = 'SELECT  a.alumni_id as alumni_id, CONCAT_WS(" ", a.fname, a.mname, a.lname) as alumni_name,s.survey_question as survey_question, ans.answer as answer  FROM answer ans  INNER JOIN alumni a ON ans.alumni_id = a.alumni_id INNER JOIN survey_question s ON s.survey_question_id = ans.survey_question_id ';
-    db.query(query, function (err, results) {
-        if (err) return res.status(500);
-        else return res.json(results);
-    });
+    (async () => {
+        try {
+            const results = await db("answer as ans")
+                .join("alumni as a", "ans.alumni_id", "a.alumni_id")
+                .join("survey_question as s", "s.survey_question_id", "ans.survey_question_id")
+                .select(
+                    "a.alumni_id as alumni_id",
+                    db.raw(
+                        `TRIM(COALESCE(a.fname,'') || ' ' || COALESCE(a.mname,'') || ' ' || COALESCE(a.lname,'')) as alumni_name`
+                    ),
+                    "s.survey_question as survey_question",
+                    "ans.answer as answer"
+                );
+            return res.json(results);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch survey answers", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-get-all-survey_answers_by_alumni/:alumni_id', function (req, res) {
-    const alumni_id = req.params.alumni_id;
-    const query = 'SELECT ans.created_at, s.survey_question_id as survey_question_id, s.survey_question as survey_question, ans.answer as answer  FROM answer ans  INNER JOIN alumni a ON ans.alumni_id = a.alumni_id INNER JOIN survey_question s ON s.survey_question_id = ans.survey_question_id WHERE a.alumni_id = ? ORDER BY s.survey_question_id ASC';
-    db.query(query, [alumni_id], function (err, results) {
-        if (err) return res.status(500);
-        else return res.json(results);
-    });
+    (async () => {
+        try {
+            const alumni_id = req.params.alumni_id;
+            const results = await db("answer as ans")
+                .join("alumni as a", "ans.alumni_id", "a.alumni_id")
+                .join("survey_question as s", "s.survey_question_id", "ans.survey_question_id")
+                .where("a.alumni_id", alumni_id)
+                .orderBy("s.survey_question_id", "asc")
+                .select(
+                    "ans.created_at as created_at",
+                    "s.survey_question_id as survey_question_id",
+                    "s.survey_question as survey_question",
+                    "ans.answer as answer"
+                );
+            return res.json(results);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch alumni answers", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-check-submission/:alumni_id', function (req, res) {
-    const alumni_id = req.params.alumni_id;
-    const query = 'SELECT * FROM answer WHERE alumni_id = ?';
-    db.query(query, [alumni_id], function (err, results) {
-        if (err) {
-            return res.status(500);
+    (async () => {
+        try {
+            const alumni_id = req.params.alumni_id;
+            const row = await db("answer").where({ alumni_id }).first("answer_id");
+            if (row) return res.json({ message: "You have already submitted the survey", submitted: true });
+            return res.json({ message: "You have not submitted the survey", submitted: false });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to check submission", error: String(err?.message || err) });
         }
-        else {
-            if (results.length > 0) return res.json({ message: "You have already submitted the survey", submitted: true });
-            else return res.json({ message: "You have not submitted the survey", submitted: false });
-
-        }
-    });
+    })();
 });
 app.get('/api-get-all-question', function (req, res) {
-    const query = 'SELECT * FROM survey_question';
-    db.query(query, function (err, result) {
-        if (err) return res.status(500);
-        else return res.json(result);
-    });
+    (async () => {
+        try {
+            const result = await db("survey_question").select("*");
+            return res.json(result);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch questions", error: String(err?.message || err) });
+        }
+    })();
 });
 app.post('/api-submit-survey', (req, res) => {
-    const { alumni_id, answers } = req.body;
+    (async () => {
+        try {
+            const { alumni_id, answers } = req.body;
 
-    if (!alumni_id || !answers || answers.length === 0) {
-        return res.status(400).json({ message: "Missing data" });
-    }
+            if (!alumni_id || !answers || answers.length === 0) {
+                return res.status(400).json({ message: "Missing data" });
+            }
 
-    const query = `
-        INSERT INTO answer (alumni_id, survey_question_id, answer)
-        VALUES ?
-    `;
+            await db.transaction(async (trx) => {
+                for (const a of answers) {
+                    await trx("answer").insert({
+                        alumni_id,
+                        survey_question_id: a.survey_question_id,
+                        answer: a.answer,
+                    });
+                }
+            });
 
-    // Convert to a 2D array for bulk insert
-    const values = answers.map(a => [
-        alumni_id,
-        a.survey_question_id,
-        a.answer
-    ]);
-
-    db.query(query, [values], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Error saving answers" });
+            return res.json({ message: "Survey submitted successfully!" });
+        } catch (err) {
+            return res.status(500).json({ message: "Error saving answers", error: String(err?.message || err) });
         }
-        res.json({ message: "Survey submitted successfully!" });
-    });
+    })();
 });
 app.post('/api-store-job-history', (req, res) => {
-    const { alumni_id, company_name, position, start_date, end_date } = req.body;
-    const query = 'INSERT INTO job_history (alumni_id,company_name,position,start_date,end_date) VALUES (?,?,?,?,?)';
-    db.query(query, [alumni_id, company_name, position, start_date, end_date], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.status(201).send({ message: "Job History Created Successfully" });
-
-    });
+    (async () => {
+        try {
+            const { alumni_id, company_name, position, start_date, end_date } = req.body;
+            await db("job_history").insert({
+                alumni_id,
+                company_name,
+                position,
+                start_date: start_date || null,
+                end_date: end_date || null,
+            });
+            return res.status(201).send({ message: "Job History Created Successfully" });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to create job history", error: String(err?.message || err) });
+        }
+    })();
 });
 app.get('/api-get-all-job-history/:alumni_id', (req, res) => {
-    const query = 'SELECT * FROM job_history WHERE alumni_id=?';
-    db.query(query, [req.params.alumni_id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.json(result);
-    });
+    (async () => {
+        try {
+            const alumni_id = req.params.alumni_id;
+            const result = await db("job_history").where({ alumni_id }).select("*");
+            return res.json(result);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch job history", error: String(err?.message || err) });
+        }
+    })();
 });
 app.put('/api-update-job-history', (req, res) => {
-    const { job_history_id, company_name, position, start_date, end_date } = req.body;
-    const query = 'UPDATE job_history SET company_name=?,position=?,start_date=?,end_date=? WHERE job_history_id=?';
-    db.query(query, [company_name, position, start_date, end_date, job_history_id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.status(200).send({ message: "Job History Updated Successfully" });
-    });
+    (async () => {
+        try {
+            const { job_history_id, company_name, position, start_date, end_date } = req.body;
+            await db("job_history")
+                .where({ job_history_id })
+                .update({
+                    company_name,
+                    position,
+                    start_date: start_date || null,
+                    end_date: end_date || null,
+                    updated_at: db.fn.now(),
+                });
+            return res.status(200).send({ message: "Job History Updated Successfully" });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to update job history", error: String(err?.message || err) });
+        }
+    })();
 });
 app.delete('/api-delete-job-history', (req, res) => {
-    const { job_history_id } = req.body;
-    const query = 'DELETE FROM job_history WHERE job_history_id=?';
-    db.query(query, [job_history_id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.status(200).send({ message: "Job History Deleted Successfully" });
-    });
+    (async () => {
+        try {
+            const { job_history_id } = req.body;
+            await db("job_history").where({ job_history_id }).del();
+            return res.status(200).send({ message: "Job History Deleted Successfully" });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to delete job history", error: String(err?.message || err) });
+        }
+    })();
 })
 app.get('/api-get-alumni-info/:alumni_id', (req, res) => {
-    const query = 'SELECT * FROM alumni WHERE alumni_id=?';
-    db.query(query, [req.params.alumni_id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.status(200).send(result);
-    });
+    (async () => {
+        try {
+            const alumni_id = req.params.alumni_id;
+            const result = await db("alumni").where({ alumni_id }).select("*");
+            return res.status(200).send(result);
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to fetch alumni info", error: String(err?.message || err) });
+        }
+    })();
 });
 app.put('/api-update-alumni-info', (req, res) => {
-    const { alumni_id, fname, mname, lname, contact_no } = req.body;
-    const query = 'UPDATE alumni SET fname=?,mname=?,lname=?,contact_no=? WHERE alumni_id=?';
-    db.query(query, [fname, mname, lname, contact_no, alumni_id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        else return res.status(200).send({ message: "Alumni Info Updated Successfully" });
-    });
+    (async () => {
+        try {
+            const { alumni_id, fname, mname, lname, contact_no } = req.body;
+            await db("alumni")
+                .where({ alumni_id })
+                .update({
+                    fname,
+                    mname: mname || null,
+                    lname,
+                    contact_no: contact_no || null,
+                    updated_at: db.fn.now(),
+                });
+            return res.status(200).send({ message: "Alumni Info Updated Successfully" });
+        } catch (err) {
+            return res.status(500).send({ message: "Failed to update alumni info", error: String(err?.message || err) });
+        }
+    })();
 })
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

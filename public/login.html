@@ -214,10 +214,10 @@
 
             const form = event.target;
 
-            const data = {
-                username: form.login_username.value,
-                password: form.login_password.value
-            };
+	            const data = {
+	                username: form.login_username.value.trim(),
+	                password: form.login_password.value
+	            };
 
             try {
                 const response = await fetch('/api-login', {

@@ -1,77 +1,53 @@
-# Alumni Management System - Database Setup
+# Alumni Management System
 
-## Quick Start
+## Quick Start (SQLite)
 
-### 1. Install Dependencies
+### 1) Install dependencies
 ```bash
 npm install
 ```
 
-### 2. Run Database Migration
+### 2) Create/update database schema
 ```bash
-node migrate.js
+npm run migrate:latest
 ```
 
-This will:
-- Create the `alumni_db` database
-- Create all required tables (admin_user, alumni, survey_question, answer, job_history)
-- Add indexes for performance
-- Insert default admin user
-- Add sample survey questions
+### 3) Seed initial data (admin + questions)
+```bash
+npm run seed:run
+```
 
-### 3. Start the Server
+### 4) Start the server
 ```bash
 node app.js
 ```
 
-Server will run on: http://localhost:3000
+Server runs on: http://localhost:3000
 
-## Default Admin Credentials
-- **Username:** admin
-- **Password:** admin123
+## Database
+- **Database engine:** SQLite (file-based)
+- **Default file:** `data/alumni.sqlite` (preferred). If `data/alumni.sqlite3` exists, it will be used.
+- **Override file path:** set `SQLITE_DB_FILE`
 
-⚠️ **Important:** Change the default admin password after first login!
-
-## Database Structure
-
-### Tables:
-1. **admin_user** - Admin accounts
-2. **alumni** - Alumni user accounts
-3. **survey_question** - Survey questions
-4. **answer** - Alumni survey responses
-5. **job_history** - Alumni employment history
-
-## Manual Migration (Alternative)
-
-If you prefer to run the migration manually:
-
-1. Open MySQL/phpMyAdmin
-2. Import the file: `migrations/001_initial_schema.sql`
-
-## Environment Variables (Optional)
-
-Create a `.env` file for custom database configuration:
-
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=alumni_db
-PORT=3000
+PowerShell example:
+```powershell
+$env:SQLITE_DB_FILE="C:\\path\\to\\alumni.sqlite"
 ```
 
-## Troubleshooting
+## Default admin account (seeded)
+- **Username:** `admintest@gmail.com`
+- **Password:** `admintes123`
 
-**Error: Cannot connect to database**
-- Make sure MySQL is running
-- Check your database credentials in `app.js`
-
-**Error: Table already exists**
-- The migration uses `IF NOT EXISTS` so it's safe to run multiple times
-- To reset, drop the database and run migration again
+## Migrations & seeds
+```bash
+npm run migrate:latest
+npm run migrate:rollback
+npm run seed:run
+```
 
 ## Tech Stack
 - Node.js + Express
-- MySQL
+- SQLite + Knex (migrations/seeds)
 - Bootstrap 5
 - Bcrypt for password hashing
+
